@@ -78,6 +78,12 @@ if ($token === '') {
     exit;
 }
 
+if ($chat_id === '') {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Telegram owner chat ID belum diset. Sila tetapkan TELEGRAM_ADMIN_CHAT_ID atau TELEGRAM_CHAT_ID.']);
+    exit;
+}
+
 $message = "Pengesahan Kod Berjaya\n\n" .
     "Nama: $nama\n" .
     "No. IC: $ic\n" .

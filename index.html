@@ -670,18 +670,25 @@ function verifyCode(){
             otp: code
         })
     })
-    .then(response => response.json().then(data => ({status: response.status, ok: response.ok, data})))
-    .then(({ok, data}) => {
-        if (ok && data.ok) {
+    .then(response => response.text().then(text => ({status: response.status, ok: response.ok, text})))
+    .then(({ok, text}) => {
+        let data = {};
+        try {
+            data = JSON.parse(text || '{}');
+        } catch (err) {
+            console.log('Invalid JSON response from verify.php', text);
+        }
+
+        if (ok && data.success) {
             tutupPopup();
             bukaPopupSuccess();
         } else {
-            let errorMessage = "Pengesahan gagal: " + (data.error || data.description || "Sila cuba semula.");
+            let errorMessage = data.error || data.description || "Pengesahan gagal. Sila cuba semula.";
             alert(errorMessage);
         }
     })
     .catch(error => {
-        console.log(error);
+        console.error(error);
         alert("Pengesahan gagal dihantar. Sila cuba semula.");
     });
 
