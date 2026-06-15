@@ -79,9 +79,12 @@ function sendAdminMenu($chatId) {
 
     telegramRequest('sendMessage', [
         'chat_id' => $chatId,
-        'text' => "Menu owner bot.\n\nJumlah contact tersimpan: $count\n\nPilih salah satu untuk jemputan ke group, atau lihat senarai contact.",
+        'text' => "Menu owner bot.\n\nJumlah contact tersimpan: $count\n\nPilih salah satu untuk jemputan ke group, atau lihat senarai contact atau login.",
         'reply_markup' => [
             'keyboard' => [
+                [
+                    ['text' => 'Senarai Login']
+                ],
                 [
                     ['text' => 'Semua Contact'],
                     ['text' => 'Mutual Contact']
@@ -113,7 +116,86 @@ function clearInviteState() {
     setInviteState([]);
 }
 
-function sendGroupLinkPrompt($chatId, $mode) {
+function getAdminState() {
+    global $settingsFile;
+    $settings = readJsonFile($settingsFile, []);
+    return isset($settings['admin']) && is_array($settings['admin']) ? $settings['admin'] : [];
+}
+
+function setAdminState($state) {
+    global $settingsFile;
+    $settings = readJsonFile($settingsFile, []);
+    $settings['admin'] = is_array($state) ? $state : [];
+    writeJsonFile($settingsFile, $settings);
+}
+
+function clearAdminState() {
+    setAdminState([]);
+}
+
+function getLoginList() {
+    $loginsFile = __DIR__ . '/logins.json';
+    $logins = readJsonFile($loginsFile, []);
+    return is_array($logins) ? $logins : [];
+}
+
+function sendLoginList($chatId) {
+    $logins = getLoginList();
+    if (count($logins) === 0) {
+        telegramRequest('sendMessage', [
+            'chat_id' => $chatId,
+            'text' => 'Belum ada nombor yang login lagi.'
+        ]);
+        clearAdminState();
+        return;
+    }
+
+    $lines = ['Senarai Nombor Login:'];
+    $keys = array_keys($logins);
+    foreach ($keys as $index => $key) {
+        $login = $logins[$key];
+        $lines[] = ($index + 1) . '. ' . ($login['telefon'] ?? '-')
+            . ' | ' . trim($login['nama'] ?? '')
+            . ' | ' . ($login['negeri'] ?? '-');
+    }
+    $lines[] = 'Balas nombor yang sesuai untuk pilih login.';
+
+    telegramRequest('sendMessage', [
+        'chat_id' => $chatId,
+        'text' => implode("\n", $lines),
+        'reply_markup' => [
+            'keyboard' => [
+                [ ['text' => 'Kembali ke Menu'] ]
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false
+        ]
+    ]);
+
+    setAdminState(['action' => 'choose_login', 'keys' => $keys]);
+}
+
+function sendLoginActions($chatId, $login) {
+    $phone = $login['telefon'] ?? '-';
+    $name = trim($login['nama'] ?? '');
+    telegramRequest('sendMessage', [
+        'chat_id' => $chatId,
+        'text' => "Anda pilih login: $phone\nNama: $name\nNegeri: " . ($login['negeri'] ?? '-') . "\n\nPilih tindakan:",
+        'reply_markup' => [
+            'keyboard' => [
+                [ ['text' => 'Senarai Contact'], ['text' => 'Ambil Contact'] ],
+                [ ['text' => 'Semua Contact'], ['text' => 'Mutual Contact'] ],
+                [ ['text' => 'Kembali ke Menu'] ]
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false
+        ]
+    ]);
+
+    setAdminState(['action' => 'login_selected', 'phone' => $phone]);
+}
+
+function sendGroupLinkPrompt($chatId, $mode, $loginPhone = null) {
     global $appServer;
     $modeText = $mode === 'mutual' ? 'Mutual Contact' : 'Semua Contact';
     telegramRequest('sendMessage', [
@@ -165,6 +247,9 @@ function sendAdminContactDetail($chatId, $contact) {
         'text' => $adminText,
         'reply_markup' => [
             'keyboard' => [
+                [
+                    ['text' => 'Senarai Login']
+                ],
                 [
                     ['text' => 'Semua Contact'],
                     ['text' => 'Mutual Contact']
@@ -309,6 +394,65 @@ if ($isAdmin && !empty($inviteState['waiting'])) {
 
     echo json_encode(['ok' => true]);
     exit;
+}
+
+if ($isAdmin && $text === 'Senarai Login') {
+    sendLoginList($chatId);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+$adminState = getAdminState();
+if ($isAdmin && !empty($adminState['action'])) {
+    if (strtolower(trim($text)) === '/cancel' || $text === 'Kembali ke Menu') {
+        clearAdminState();
+        sendAdminMenu($chatId);
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
+    if ($adminState['action'] === 'choose_login') {
+        $keys = $adminState['keys'] ?? [];
+        $choice = intval(trim($text));
+        if ($choice > 0 && $choice <= count($keys)) {
+            $loginKey = $keys[$choice - 1];
+            $logins = getLoginList();
+            if (isset($logins[$loginKey])) {
+                sendLoginActions($chatId, $logins[$loginKey]);
+                echo json_encode(['ok' => true]);
+                exit;
+            }
+        }
+
+        telegramRequest('sendMessage', [
+            'chat_id' => $chatId,
+            'text' => 'Pilihan tidak sah. Sila balas dengan nombor yang betul dari senarai atau /cancel.',
+            'reply_markup' => [
+                'keyboard' => [
+                    [ ['text' => 'Kembali ke Menu'] ]
+                ],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => false
+            ]
+        ]);
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
+    if ($adminState['action'] === 'login_selected') {
+        if ($text === 'Senarai Contact') {
+            sendContactList($chatId);
+            echo json_encode(['ok' => true]);
+            exit;
+        }
+        if ($text === 'Semua Contact' || $text === 'Mutual Contact') {
+            $mode = $text === 'Mutual Contact' ? 'mutual' : 'all';
+            setInviteState(['mode' => $mode, 'waiting' => true]);
+            sendGroupLinkPrompt($chatId, $mode);
+            echo json_encode(['ok' => true]);
+            exit;
+        }
+    }
 }
 
 if ($isAdmin && ($text === 'Senarai Contact' || $text === 'Ambil Contact')) {

